@@ -1,0 +1,14 @@
+Python Basics - Personal Study Notes
+
+1) Python is an interpreted, high-level programming language.
+2) It supports multiple programming paradigms – procedural, object-oriented, and functional.
+3) Variables do not require explicit type declarations (dynamic typing).
+4) Common data types: int, float, string, boolean, list, tuple, dictionary.
+5) Python uses indentation instead of braces to define code blocks.
+6) Functions are defined with the 'def' keyword.
+7) Modules allow us to reuse code by importing Python files.
+8) Exception handling is done using try-except blocks.
+9) File handling uses open(), read(), write(), close().
+10) Virtual environments help isolate project dependencies.
+
+These are general notes for revision. Nothing confidential.

@@ -1,0 +1,22 @@
+Personal Notes – Confidential
+-----------------------------
+
+These are my private notes that I don’t want anyone else to see.
+
+- My internship project ideas
+- Important links and to-do tasks
+- Future goals and reminders
+- Sensitive personal details I want to keep protected
+
+I am storing this file inside the Zentry Vault because it contains
+information that should not be visible to others if someone opens
+my laptop or accesses my folders. The vault encrypts this file so
+only I can unlock and view it.
+
+Demo Purpose:
+This file is used to show how Zentry encrypts and stores private 
+files securely, and how they can be accessed only after entering 
+the correct passwords.
+
+(End of confidential notes)
+

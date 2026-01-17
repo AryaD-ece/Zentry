@@ -1,0 +1,4 @@
+Invoice #3
+Company: ACME Pvt Ltd
+Amount: INR 3000
+Note: Paid
