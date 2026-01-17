@@ -1,228 +1,260 @@
-🔐 Zentry — Two-Layer Secure Vault with Decoy Access (Python)
+# Zentry — Secure Two-Layer File Vault with Decoy Access (Python)
 
-Zentry is a lightweight, security-first encrypted file vault written in Python. It provides two-layer authentication (L1 + optional L2) and a built-in decoy vault to support coercion-resistant access.
+Zentry is a lightweight **encrypted file vault** implemented in Python, designed to securely store sensitive files using a **two-layer authentication model (L1 + optional L2)** and an independent **Decoy Vault** for coercion-resistant scenarios.
 
-Core idea: If someone forces you to unlock the vault, you can reveal the Decoy Vault — while the Real Vault remains encrypted, hidden, and protected.
+The system maintains strict separation between the **Real Vault** (protected) and **Decoy Vault** (controlled disclosure). Under coercion, the decoy vault can be revealed without exposing real vault content.
 
-✨ Features
+---
 
-✅ Two vaults: Real Vault + Decoy Vault
+## Contents
 
-✅ Two-layer authentication:
+- [Overview](#overview)
+- [Key Capabilities](#key-capabilities)
+- [System Model](#system-model)
+- [Cryptography and Security Design](#cryptography-and-security-design)
+- [Command Line Interface](#command-line-interface)
+- [Repository Structure](#repository-structure)
+- [Installation](#installation)
+- [Operational Workflow](#operational-workflow)
+- [Example Usage](#example-usage)
+- [Operational Notes](#operational-notes)
+- [Author](#author)
 
-L1 password (mandatory)
+---
 
-L2 factor (optional): Password / Recovery Key / None
+## Overview
 
-✅ Strong encryption: AES-256 via AES-GCM (authenticated encryption)
+Zentry provides encrypted storage for files in two separate compartments:
 
-✅ Secure key derivation: PBKDF2 + random salt
+- **Real Vault**: intended for sensitive assets requiring strong access control
+- **Decoy Vault**: intended for safe disclosure under coercion (contains non-sensitive content only)
 
-✅ Tamper detection (via AES-GCM integrity guarantees)
+This model allows controlled access without compromising the confidentiality of real assets.
 
-✅ Simple, predictable CLI:
+---
 
-init, add, list, export, decoy-init
+## Key Capabilities
 
-✅ Designed for coercion defense using decoy access mode
+- **Dual-vault architecture**: independent encrypted stores for Real and Decoy vaults
+- **Two-layer authentication**:
+  - **L1 password** (mandatory)
+  - **L2 factor** (configurable: password / recovery key / disabled)
+- **Cryptographic confidentiality and integrity** using **AES-GCM**
+- **Password-based key derivation** using **PBKDF2** with per-vault random salt
+- **Coercion-aware access model**:
+  - decoy password unlocks decoy vault only
+  - real vault remains inaccessible without real credentials
+- CLI-driven operation for deterministic and reproducible workflows
 
-📌 Table of Contents
+---
 
-Overview
+## System Model
 
-Vault Model
+### Vaults
 
-Security Architecture
+Zentry maintains two vaults with strict separation:
 
-CLI Commands
+- **Real Vault** (`real.zvlt`)
+- **Decoy Vault** (`decoy.zvlt`)
 
-Project Structure
+Both vaults are encrypted independently with different derived keys and metadata.
 
-Installation
+---
 
-Quick Start
+### Authentication Model
 
-Example Workflow
+#### Layer 1 (L1) — Primary Password *(mandatory)*
 
-Repo Hygiene Notes
+Used as the primary authentication factor and as input to key derivation.
 
-Author
+#### Layer 2 (L2) — Optional Secondary Factor *(configurable during initialization)*
 
-🧠 Overview
+Supported L2 modes:
 
-Zentry maintains two separate encrypted vaults:
+1. **L2 Password**
+2. **Recovery Key (offline secret)** *(recommended for stronger security posture)*
+3. **No L2**
 
-Real Vault → contains sensitive/private data (high security)
+If recovery key mode is selected:
 
-Decoy Vault → contains safe, harmless files (coercion mode)
+> Real Vault unlock requires **L1 password + recovery key**
 
-This model enables you to provide access under pressure without compromising real data.
+---
 
-🏦 Vault Model
-1) Real Vault (Protected Vault)
+### Decoy Access Model
 
-Unlock requires:
+The Decoy Vault is unlocked using the **decoy password**. This provides controlled disclosure without revealing real vault contents.
 
-L1: Primary password (mandatory)
+Operational intent:
 
-L2 (optional; chosen during setup):
+- if coerced, provide decoy password
+- attacker gains access only to decoy content
+- real vault remains encrypted and protected
 
-L2 password
+---
 
-Recovery key (offline) (recommended)
+## Cryptography and Security Design
 
-No second factor
+Zentry follows a pragmatic security baseline using well-established primitives.
 
-If the recovery key method is chosen:
+### Encryption
 
-Real Vault unlock requires L1 password + Recovery Key
+- **AES-GCM** (Authenticated Encryption)
+  - confidentiality: prevents disclosure without correct keys
+  - integrity/authentication: detects modifications (tampering)
 
-2) Decoy Vault (Coercion-Resistant Mode)
+### Key Derivation
 
-The Decoy Vault is encrypted separately and is unlocked using a Decoy Password.
+- **PBKDF2**
+  - derives cryptographic keys from passwords
+  - uses per-vault random salt
+  - mitigates brute-force effectiveness compared to raw password usage
 
-If coerced:
+### Randomness
 
-You provide the Decoy Password
+Random salt and nonce are generated for cryptographic operations.
 
-Attacker sees only decoy contents
+✅ Files are never stored in plaintext inside the vault containers.
 
-Real Vault remains encrypted and inaccessible
+---
 
-🛡 Security Architecture
+## Command Line Interface
 
-Zentry uses modern cryptographic primitives:
+| Command | Function |
+|--------|----------|
+| `init` | Initialize Real and Decoy vaults |
+| `add <file>` | Encrypt and add file to Real Vault |
+| `add <file> --decoy` | Encrypt and add file to Decoy Vault |
+| `list` | List Real Vault contents |
+| `list --decoy` | List Decoy Vault contents |
+| `export <file>` | Decrypt and export file |
+| `decoy-init` | Generate and insert synthetic decoy data |
+| `lock` | Clear in-memory keys *(utility / demo)* |
 
-AES-GCM for encryption + integrity (tamper detection)
+---
 
-Random salt and nonce
+## Repository Structure
 
-PBKDF2 for password-based key derivation
-
-✅ Sensitive content is never stored in plaintext.
-
-🧾 CLI Commands
-Command	Description
-init	Initialize Real + Decoy vaults
-add <file>	Encrypt + add file into Real Vault
-add <file> --decoy	Encrypt + add file into Decoy Vault
-list	List Real Vault contents
-list --decoy	List Decoy Vault contents
-export <file>	Decrypt + export a file from the vault
-decoy-init	Generate fake files inside Decoy Vault
-lock	Clear in-memory keys (demo utility)
-🗂 Project Structure
+```txt
 Zentry/
 ├── cli.py                 # CLI entry point
-├── crypto.py              # AES-GCM + PBKDF2 utilities
-├── vault.py               # Vault logic (real + decoy)
+├── crypto.py              # Cryptographic utilities (AES-GCM, PBKDF2)
+├── vault.py               # Vault management logic (Real + Decoy)
 ├── decoy_gen.py           # Decoy content generator
 ├── hello.txt              # Sample file
 ├── exports/               # Decrypted exports (output)
-├── storage/               # Internal modules/storage utilities
-├── zentry_store/          # Encrypted vault data
+├── storage/               # Internal support modules
+├── zentry_store/          # Vault artifacts (encrypted)
 │   ├── real.zvlt
 │   ├── decoy.zvlt
 │   └── meta.json
-└── .venv/                 # Virtual environment (ignored by Git)
-
-⚙ Installation
+└── .venv/                 # Virtual environment (excluded from Git)
+Installation
 Requirements
-
 Python 3.12+
 
-Dependency: cryptography
+Python dependency:
+
+cryptography
 
 Setup (Windows / Git Bash)
+Create and activate the virtual environment:
 
-Create and activate a virtual environment:
-
+bash
+Copy code
 python -m venv .venv
 source .venv/Scripts/activate
+Install dependency:
 
-
-Install dependencies:
-
+bash
+Copy code
 pip install cryptography
-
-🚀 Quick Start
-1) Initialize vault
+Operational Workflow
+1) Initialize vaults
+bash
+Copy code
 python cli.py init
-
-
-You will be prompted for:
+Prompts include:
 
 L1 password
 
-L2 method (password / recovery key / none)
+L2 mode selection
 
-Recovery key or L2 password
+L2 credential (password or recovery key)
 
 Decoy password
 
-Vault artifacts created:
+Generated vault artifacts:
 
+txt
+Copy code
 zentry_store/real.zvlt
 zentry_store/decoy.zvlt
 zentry_store/meta.json
-
-2) Add a file
-
+2) Add file to vault
 Add to Real Vault:
 
+bash
+Copy code
 python cli.py add hello.txt
-
-
 Add to Decoy Vault:
 
+bash
+Copy code
 python cli.py add hello.txt --decoy
-
-3) List vault contents
-
+3) List contents
 Real Vault:
 
+bash
+Copy code
 python cli.py list
-
-
 Decoy Vault:
 
+bash
+Copy code
 python cli.py list --decoy
-
-4) Export (decrypt) a file
+4) Export file
+bash
+Copy code
 python cli.py export hello.txt
+Exports are written to:
 
-
-Decrypted exports are written to:
-
+txt
+Copy code
 exports/hello.txt
-
-5) Generate decoy vault content
+5) Initialize decoy content
+bash
+Copy code
 python cli.py decoy-init
-
-6) Lock vault (demo utility)
+6) Lock vault (utility)
+bash
+Copy code
 python cli.py lock
-
-✅ Example Workflow
+Example Usage
+bash
+Copy code
 python cli.py init
 python cli.py add hello.txt
 python cli.py list
 python cli.py export hello.txt
-
-🧼 Repo Hygiene Notes
-
-Recommended .gitignore entries:
+Operational Notes
+Repository Hygiene / Git Safety
+Recommended .gitignore exclusions:
 
 .venv/
+
+__pycache__/
 
 exports/
 
 zentry_store/
 
-__pycache__/
+Do not commit encrypted vault artifacts or metadata to source control.
 
-Do not commit vault files (*.zvlt, meta.json) to GitHub.
+Security Scope Disclaimer
+Zentry is a learning and demonstration project intended for secure storage workflows. It is not formally audited and is not positioned as a certified security product.
 
-👤 Author
-
+Author
 Arya Dinesh
-B.Tech ECE — Secure File Storage System Project
+B.Tech — Electronics and Communication Engineering (ECE)
+Project: Secure File Storage System (Zentry)
