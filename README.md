@@ -149,28 +149,28 @@ Zentry/
 │   ├── decoy.zvlt
 │   └── meta.json
 └── .venv/                 # Virtual environment (excluded from Git)
-Installation
-Requirements
+
+- ** Installation Requirements
 Python 3.12+
 
-Python dependency:
+- ** Python dependency:
 
 cryptography
 
 Setup (Windows / Git Bash)
+
 Create and activate the virtual environment:
 
-bash
-Copy code
 python -m venv .venv
+
 source .venv/Scripts/activate
+
 Install dependency:
 
-bash
-Copy code
 pip install cryptography
 Operational Workflow
-1) Initialize vaults
+
+- ** 1) Initialize vaults
 bash
 Copy code
 python cli.py init
@@ -186,75 +186,57 @@ Decoy password
 
 Generated vault artifacts:
 
-txt
-Copy code
 zentry_store/real.zvlt
 zentry_store/decoy.zvlt
 zentry_store/meta.json
-2) Add file to vault
+
+- ** 2) Add file to vault
 Add to Real Vault:
 
-bash
-Copy code
 python cli.py add hello.txt
 Add to Decoy Vault:
 
-bash
-Copy code
 python cli.py add hello.txt --decoy
-3) List contents
+
+- ** 3) List contents
 Real Vault:
 
-bash
-Copy code
 python cli.py list
 Decoy Vault:
 
-bash
-Copy code
 python cli.py list --decoy
-4) Export file
-bash
-Copy code
+
+- ** 4) Export file
+
 python cli.py export hello.txt
+
 Exports are written to:
 
-txt
-Copy code
 exports/hello.txt
-5) Initialize decoy content
-bash
-Copy code
+
+- ** 5) Initialize decoy content
+
 python cli.py decoy-init
-6) Lock vault (utility)
-bash
-Copy code
+
+- ** 6) Lock vault (utility)
+
 python cli.py lock
-Example Usage
-bash
-Copy code
+
+- ** Example Usage
+
 python cli.py init
 python cli.py add hello.txt
 python cli.py list
 python cli.py export hello.txt
-Operational Notes
-Repository Hygiene / Git Safety
-Recommended .gitignore exclusions:
 
-.venv/
+---
 
-__pycache__/
-
-exports/
-
-zentry_store/
-
-Do not commit encrypted vault artifacts or metadata to source control.
-
-Security Scope Disclaimer
+- ** Security Scope Disclaimer
 Zentry is a learning and demonstration project intended for secure storage workflows. It is not formally audited and is not positioned as a certified security product.
 
-Author
-Arya Dinesh
+---
+
+## Author
+- ** Arya Dinesh
 B.Tech — Electronics and Communication Engineering (ECE)
 Project: Secure File Storage System (Zentry)
