@@ -1,4 +1,0 @@
-Invoice #1
-Company: ACME Pvt Ltd
-Amount: INR 1000
-Note: Paid

@@ -1,4 +1,0 @@
-Grocery list:
-- milk
-- eggs
-- rice
