@@ -292,7 +292,7 @@ Recommended `.gitignore` exclusions:
 ```gitignore
 .venv/
 __pycache__/
-*.pyc
+.pyc
 exports/
 zentry_store/
 ```
