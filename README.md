@@ -1,230 +1,210 @@
-# Zentry — A Simple Two–Layer Secure Vault (Python Project)
+# Zentry — Two-Layer Secure Vault with Decoy Mode (Python)
 
-Zentry is a lightweight, Python-based secure vault system designed to store sensitive files with **two-layer protection** and a **decoy (fake) vault**.  
-It is built for beginners and works entirely through simple command-line instructions.
+Zentry is a lightweight **secure file vault** built in Python. It protects sensitive files using **two-layer authentication (L1 + optional L2)** and a **decoy (fake) vault** for coercion-resistant access.
 
-This project does *not* use advanced Python or AI libraries — only the `cryptography` package for AES encryption.
+> **Goal:** If someone forces access, you can reveal the decoy vault while the real vault remains encrypted and protected.
 
 ---
 
-## 🚀 Features
+## Table of Contents
+- [Key Highlights](#key-highlights)
+- [How It Works](#how-it-works)
+- [Security Model](#security-model)
+- [Commands](#commands)
+- [Project Structure](#project-structure)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Example Session](#example-session)
+- [Notes (Repo Hygiene)](#notes-repo-hygiene)
+- [Author](#author)
 
-### 🔐 1. Two-Layer Security (L1 + L2)
-Zentry uses two layers of authentication for the real vault:
+---
 
-- **L1:** Main password  
-- **L2:** Secondary unlock method (choose one):
-  1. Another password  
-  2. **Offline recovery key** *(recommended)*  
+## Key Highlights
+- Two independent vaults: **Real Vault** + **Decoy Vault**
+- **Two-layer authentication**: L1 password + optional L2
+- Strong encryption: **AES-256 (AES-GCM authenticated encryption)**
+- Secure key derivation: **PBKDF2 + random salt**
+- Clean **CLI workflow** with file add/list/export
+- Decoy mode designed for **coercion defense**
+
+---
+
+## How It Works
+
+Zentry maintains **two separate encrypted vaults**:
+
+### 1) Real Vault (Protected)
+Access requires:
+- **L1:** primary password
+- **L2 (optional):** chosen during setup:
+  1. L2 password
+  2. **Recovery key (offline)** *(recommended)*
   3. No second factor
 
-You chose **Option 2 → Recovery Key**.  
-This means L1 + recovery key are required to open the real vault.
+If you select Recovery Key:
+> **Real vault unlock requires L1 password + recovery key**
 
 ---
 
-### 🎭 2. Decoy / Fake Vault (Lies to attackers)
-Zentry includes a fully separate encrypted **decoy vault**, protected by a **decoy password**.
+### 2) Decoy Vault (Coercion Defense)
+The decoy vault is protected using a **decoy password**.
 
-If someone forces you to open the vault:
-- You enter the *decoy password*  
-- They see **fake harmless files**, not your real secrets
-
----
-
-### 📦 3. Encrypted Vault Storage (AES-GCM)
-Both real and decoy vaults are encrypted using:
-- AES-256
-- Random salt + nonce  
-- Integrity-checked ciphertext
-
-Files are never stored in plain text.
-
-Your vault files live in:
-
-zentry_store/
-real.zvlt
-decoy.zvlt
-meta.json
-
-yaml
-Copy code
+If coerced:
+- You enter the **decoy password**
+- The attacker sees harmless decoy files
+- The real vault remains hidden and encrypted
 
 ---
 
-### 📁 4. File Operations
-Zentry supports:
+## Security Model
+Zentry uses:
+- **AES-GCM** for confidentiality + integrity (tamper detection)
+- Random **salt** and **nonce**
+- **PBKDF2** to derive encryption keys securely from passwords
+
+✅ Sensitive files are never stored in plaintext.
+
+---
+
+## Commands
 
 | Command | Description |
 |--------|-------------|
-| `add <filename>` | Add a file to real/decoy vault |
-| `list` | List files in the real vault |
-| `list --decoy` | List decoy vault files |
-| `export <filename>` | Export + decrypt a file |
-| `decoy-init` | Generate fake files for the decoy vault |
-| `lock` | Clear in-memory keys (demo only) |
+| `init` | Initialize real + decoy vault |
+| `add <file>` | Add file to real vault |
+| `add <file> --decoy` | Add file to decoy vault |
+| `list` | List real vault contents |
+| `list --decoy` | List decoy vault contents |
+| `export <file>` | Decrypt and export file |
+| `decoy-init` | Generate fake files inside decoy vault |
+| `lock` | Clear in-memory keys (demo utility) |
 
 ---
 
-## 🛠️ Installation
+## Project Structure
 
-### 1. Make sure Python is installed  
-Your project uses **Python 3.12.x**.
-
-### 2. Install the dependencies (inside venv)
-
-pip install cryptography
-
-yaml
-Copy code
-
----
-
-## 📂 Folder Structure
-
+```txt
 Zentry/
-│── cli.py
-│── crypto.py
-│── vault.py
-│── decoy_gen.py
-│── cli_demo.py (demo - optional)
-│── test_run.py
-│── hello.txt (sample file)
-│── exports/ (exported decrypted files)
-│── storage/ (temporary working folders)
-│── zentry_store/ (main encrypted vault files)
-└── .venv/ (virtual environment)
+├── cli.py                 # CLI entry point
+├── crypto.py              # AES-GCM + PBKDF2 utilities
+├── vault.py               # vault logic (real + decoy)
+├── decoy_gen.py           # decoy content generator
+├── hello.txt              # sample file
+├── exports/               # decrypted exports (output)
+├── storage/               # internal storage/modules
+├── zentry_store/          # encrypted vault data
+│   ├── real.zvlt
+│   ├── decoy.zvlt
+│   └── meta.json
+└── .venv/                 # virtual environment (ignored in Git)
+Installation
+Requirements
+Python 3.12+
 
-yaml
+Dependency: cryptography
+
+Setup (Windows / Git Bash)
+Create and activate a virtual environment:
+
+bash
 Copy code
-
----
-
-## ▶️ Usage (Commands)
-
-### **1. Initialize the vault**
+python -m venv .venv
+source .venv/Scripts/activate
+Setup (Windows / PowerShell)
+powershell
+Copy code
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+Install dependency
+bash
+Copy code
+pip install cryptography
+Quick Start
+1) Initialize the vault
+bash
+Copy code
 python cli.py init
-
-diff
-Copy code
-
 You will be prompted for:
-- L1 password  
-- L2 method  
-- L2 password OR recovery key  
-- Decoy password  
 
-This creates:
+L1 password
 
+L2 method (password / recovery key / none)
+
+Recovery key or L2 password
+
+Decoy password
+
+Vault files created:
+
+txt
+Copy code
 zentry_store/real.zvlt
 zentry_store/decoy.zvlt
 zentry_store/meta.json
+2) Add a file
+Add to real vault:
 
-yaml
+bash
 Copy code
-
----
-
-### **2. Add a file**
 python cli.py add hello.txt
-
-css
-Copy code
-
 Add to decoy vault:
+
+bash
+Copy code
 python cli.py add hello.txt --decoy
-
-yaml
-Copy code
-
----
-
-### **3. List files**
+3) List vault contents
 Real vault:
+
+bash
+Copy code
 python cli.py list
-
-yaml
-Copy code
-
 Decoy vault:
+
+bash
+Copy code
 python cli.py list --decoy
-
-yaml
+4) Export (decrypt) a file
+bash
 Copy code
-
----
-
-### **4. Export (decrypt) a file**
 python cli.py export hello.txt
+Exported output:
 
-diff
+txt
 Copy code
-
-It will ask for:
-- L1
-- L2
-If wrong → it tries decoy vault instead.
-
-Exported file goes to:
-
 exports/hello.txt
+If authentication fails, Zentry attempts decoy mode automatically.
 
-yaml
+5) Generate decoy content
+bash
 Copy code
-
----
-
-### **5. Generate fake decoy files**
 python cli.py decoy-init
-
-yaml
+6) Lock (demo utility)
+bash
 Copy code
-
----
-
-### **6. Lock vault (demo only)**
 python cli.py lock
-
-yaml
+Example Session
+bash
 Copy code
-
----
-
-## 🔍 Example Session
-
 python cli.py init
 python cli.py add hello.txt
 python cli.py list
 python cli.py export hello.txt
+Notes (Repo Hygiene)
+Recommended .gitignore entries:
 
-yaml
+gitignore
 Copy code
+# Virtual environments
+.venv/
 
-Everything worked successfully in your setup.
+# Python cache
+__pycache__/
+*.pyc
 
----
-
-## 🧪 Unit Tests
-python -m unittest discover tests
-
-yaml
-Copy code
-
----
-
-## 🎓 Why This Project Is Valuable
-- Implements real encryption (AES-256 AES-GCM)
-- Shows knowledge of:
-  - Password hashing  
-  - Key derivation with PBKDF2  
-  - Secure file handling  
-  - CLI application design  
-  - Decoy security concepts  
-
-Perfect for university grading.
-
----
-
-## 👤 Author
-Arya Dinesh  
+# Local outputs
+exports/
+decoy_tmp/
+Author
+Arya Dinesh
 B.Tech ECE — Secure File Storage System Project
