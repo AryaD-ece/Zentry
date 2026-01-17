@@ -1,130 +1,155 @@
-# Zentry — Two-Layer Secure Vault with Decoy Mode (Python)
+🔐 Zentry — Two-Layer Secure Vault with Decoy Access (Python)
 
-Zentry is a lightweight **secure file vault** built in Python. It protects sensitive files using **two-layer authentication (L1 + optional L2)** and a **decoy (fake) vault** for coercion-resistant access.
+Zentry is a lightweight, security-first encrypted file vault written in Python. It provides two-layer authentication (L1 + optional L2) and a built-in decoy vault to support coercion-resistant access.
 
-> **Goal:** If someone forces access, you can reveal the decoy vault while the real vault remains encrypted and protected.
+Core idea: If someone forces you to unlock the vault, you can reveal the Decoy Vault — while the Real Vault remains encrypted, hidden, and protected.
 
----
+✨ Features
 
-## Table of Contents
-- [Key Highlights](#key-highlights)
-- [How It Works](#how-it-works)
-- [Security Model](#security-model)
-- [Commands](#commands)
-- [Project Structure](#project-structure)
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [Example Session](#example-session)
-- [Notes (Repo Hygiene)](#notes-repo-hygiene)
-- [Author](#author)
+✅ Two vaults: Real Vault + Decoy Vault
 
----
+✅ Two-layer authentication:
 
-## Key Highlights
-- Two independent vaults: **Real Vault** + **Decoy Vault**
-- **Two-layer authentication**: L1 password + optional L2
-- Strong encryption: **AES-256 (AES-GCM authenticated encryption)**
-- Secure key derivation: **PBKDF2 + random salt**
-- Clean **CLI workflow** with file add/list/export
-- Decoy mode designed for **coercion defense**
+L1 password (mandatory)
 
----
+L2 factor (optional): Password / Recovery Key / None
 
-## How It Works
+✅ Strong encryption: AES-256 via AES-GCM (authenticated encryption)
 
-Zentry maintains **two separate encrypted vaults**:
+✅ Secure key derivation: PBKDF2 + random salt
 
-### 1) Real Vault (Protected)
-Access requires:
-- **L1:** primary password
-- **L2 (optional):** chosen during setup:
-  1. L2 password
-  2. **Recovery key (offline)** *(recommended)*
-  3. No second factor
+✅ Tamper detection (via AES-GCM integrity guarantees)
 
-If you select Recovery Key:
-> **Real vault unlock requires L1 password + recovery key**
+✅ Simple, predictable CLI:
 
----
+init, add, list, export, decoy-init
 
-### 2) Decoy Vault (Coercion Defense)
-The decoy vault is protected using a **decoy password**.
+✅ Designed for coercion defense using decoy access mode
+
+📌 Table of Contents
+
+Overview
+
+Vault Model
+
+Security Architecture
+
+CLI Commands
+
+Project Structure
+
+Installation
+
+Quick Start
+
+Example Workflow
+
+Repo Hygiene Notes
+
+Author
+
+🧠 Overview
+
+Zentry maintains two separate encrypted vaults:
+
+Real Vault → contains sensitive/private data (high security)
+
+Decoy Vault → contains safe, harmless files (coercion mode)
+
+This model enables you to provide access under pressure without compromising real data.
+
+🏦 Vault Model
+1) Real Vault (Protected Vault)
+
+Unlock requires:
+
+L1: Primary password (mandatory)
+
+L2 (optional; chosen during setup):
+
+L2 password
+
+Recovery key (offline) (recommended)
+
+No second factor
+
+If the recovery key method is chosen:
+
+Real Vault unlock requires L1 password + Recovery Key
+
+2) Decoy Vault (Coercion-Resistant Mode)
+
+The Decoy Vault is encrypted separately and is unlocked using a Decoy Password.
 
 If coerced:
-- You enter the **decoy password**
-- The attacker sees harmless decoy files
-- The real vault remains hidden and encrypted
 
----
+You provide the Decoy Password
 
-## Security Model
-Zentry uses:
-- **AES-GCM** for confidentiality + integrity (tamper detection)
-- Random **salt** and **nonce**
-- **PBKDF2** to derive encryption keys securely from passwords
+Attacker sees only decoy contents
 
-✅ Sensitive files are never stored in plaintext.
+Real Vault remains encrypted and inaccessible
 
----
+🛡 Security Architecture
 
-## Commands
+Zentry uses modern cryptographic primitives:
 
-| Command | Description |
-|--------|-------------|
-| `init` | Initialize real + decoy vault |
-| `add <file>` | Add file to real vault |
-| `add <file> --decoy` | Add file to decoy vault |
-| `list` | List real vault contents |
-| `list --decoy` | List decoy vault contents |
-| `export <file>` | Decrypt and export file |
-| `decoy-init` | Generate fake files inside decoy vault |
-| `lock` | Clear in-memory keys (demo utility) |
+AES-GCM for encryption + integrity (tamper detection)
 
----
+Random salt and nonce
 
-## Project Structure
+PBKDF2 for password-based key derivation
 
-```txt
+✅ Sensitive content is never stored in plaintext.
+
+🧾 CLI Commands
+Command	Description
+init	Initialize Real + Decoy vaults
+add <file>	Encrypt + add file into Real Vault
+add <file> --decoy	Encrypt + add file into Decoy Vault
+list	List Real Vault contents
+list --decoy	List Decoy Vault contents
+export <file>	Decrypt + export a file from the vault
+decoy-init	Generate fake files inside Decoy Vault
+lock	Clear in-memory keys (demo utility)
+🗂 Project Structure
 Zentry/
 ├── cli.py                 # CLI entry point
 ├── crypto.py              # AES-GCM + PBKDF2 utilities
-├── vault.py               # vault logic (real + decoy)
-├── decoy_gen.py           # decoy content generator
-├── hello.txt              # sample file
-├── exports/               # decrypted exports (output)
-├── storage/               # internal storage/modules
-├── zentry_store/          # encrypted vault data
+├── vault.py               # Vault logic (real + decoy)
+├── decoy_gen.py           # Decoy content generator
+├── hello.txt              # Sample file
+├── exports/               # Decrypted exports (output)
+├── storage/               # Internal modules/storage utilities
+├── zentry_store/          # Encrypted vault data
 │   ├── real.zvlt
 │   ├── decoy.zvlt
 │   └── meta.json
-└── .venv/                 # virtual environment (ignored in Git)
-Installation
+└── .venv/                 # Virtual environment (ignored by Git)
+
+⚙ Installation
 Requirements
+
 Python 3.12+
 
 Dependency: cryptography
 
 Setup (Windows / Git Bash)
+
 Create and activate a virtual environment:
 
-bash
-Copy code
 python -m venv .venv
 source .venv/Scripts/activate
-Setup (Windows / PowerShell)
-powershell
-Copy code
-python -m venv .venv
-.\.venv\Scripts\Activate.ps1
-Install dependency
-bash
-Copy code
+
+
+Install dependencies:
+
 pip install cryptography
-Quick Start
-1) Initialize the vault
-bash
-Copy code
+
+🚀 Quick Start
+1) Initialize vault
 python cli.py init
+
+
 You will be prompted for:
 
 L1 password
@@ -135,76 +160,69 @@ Recovery key or L2 password
 
 Decoy password
 
-Vault files created:
+Vault artifacts created:
 
-txt
-Copy code
 zentry_store/real.zvlt
 zentry_store/decoy.zvlt
 zentry_store/meta.json
+
 2) Add a file
-Add to real vault:
 
-bash
-Copy code
+Add to Real Vault:
+
 python cli.py add hello.txt
-Add to decoy vault:
 
-bash
-Copy code
+
+Add to Decoy Vault:
+
 python cli.py add hello.txt --decoy
+
 3) List vault contents
-Real vault:
 
-bash
-Copy code
+Real Vault:
+
 python cli.py list
-Decoy vault:
 
-bash
-Copy code
+
+Decoy Vault:
+
 python cli.py list --decoy
+
 4) Export (decrypt) a file
-bash
-Copy code
 python cli.py export hello.txt
-Exported output:
 
-txt
-Copy code
+
+Decrypted exports are written to:
+
 exports/hello.txt
-If authentication fails, Zentry attempts decoy mode automatically.
 
-5) Generate decoy content
-bash
-Copy code
+5) Generate decoy vault content
 python cli.py decoy-init
-6) Lock (demo utility)
-bash
-Copy code
+
+6) Lock vault (demo utility)
 python cli.py lock
-Example Session
-bash
-Copy code
+
+✅ Example Workflow
 python cli.py init
 python cli.py add hello.txt
 python cli.py list
 python cli.py export hello.txt
-Notes (Repo Hygiene)
+
+🧼 Repo Hygiene Notes
+
 Recommended .gitignore entries:
 
-gitignore
-Copy code
-# Virtual environments
 .venv/
 
-# Python cache
-__pycache__/
-*.pyc
-
-# Local outputs
 exports/
-decoy_tmp/
-Author
+
+zentry_store/
+
+__pycache__/
+
+Do not commit vault files (*.zvlt, meta.json) to GitHub.
+
+👤 Author
+
 Arya Dinesh
 B.Tech ECE — Secure File Storage System Project
